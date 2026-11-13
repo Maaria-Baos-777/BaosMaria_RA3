@@ -1,5 +1,8 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Processors;
+using UnityEngine.SceneManagement;
+
 
 public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
 {
@@ -47,7 +50,7 @@ public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
         {
             _sr.flipX = true;
         }
-	}
+    }
 
 	public void OnUp(InputAction.CallbackContext context) 
     {
@@ -59,5 +62,16 @@ public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
     {
         _rb.gravityScale *= -1;
 
+    }
+
+	public void OnCollisionEnter2D(Collision2D collision)
+	{
+		if(collision.gameObject.CompareTag("Pinchos")) {
+            DeadCat();
+        }
+	}
+
+    public void DeadCat() {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
     }
 }
