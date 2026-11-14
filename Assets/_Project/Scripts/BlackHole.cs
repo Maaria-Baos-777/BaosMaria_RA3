@@ -3,25 +3,14 @@ using UnityEngine.SceneManagement;
 
 public class BlackHole : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     private void OnTriggerEnter2D(Collider2D collision)
 	{
-		if(collision.CompareTag("Player")) {
-            int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
+		if(collision.CompareTag("Player")) 
+		{
+			Player.spawnAtLevelStart = true;
+
+			int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
             SceneManager.LoadScene(nextScene);
 		}
 	}
-
-
 }

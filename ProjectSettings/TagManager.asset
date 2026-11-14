@@ -5,12 +5,17 @@ TagManager:
   serializedVersion: 3
   tags:
   - Hole
-  - Pinchos
+  - Diamond
+  - NPC
+  - Void
+  - Spikes
+  - Enemy
+  - WalkingInverted
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Ground
   - Water
   - UI
   - 
