@@ -6,8 +6,8 @@ public class Turret : MonoBehaviour
 	public float visionRange = 6f;
 	public GameObject bulletPrefab;
 	private float timer;
-	public float bulletSpeed = 5f;
-	public float timeBetweenShots = 10f;
+	public float bulletSpeed = 0.1f;
+	public float timeBetweenShots = 10.1f;
 	[SerializeField] private Transform firePoint;
 
 

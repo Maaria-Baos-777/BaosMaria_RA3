@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4980035065655844731}
   m_Layer: 0
   m_Name: Triangle (1)
-  m_TagString: Pinchos
+  m_TagString: Spikes
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -289,7 +289,7 @@ GameObject:
   - component: {fileID: 2653852090791949996}
   m_Layer: 0
   m_Name: Triangle
-  m_TagString: Pinchos
+  m_TagString: Spikes
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -455,7 +455,7 @@ GameObject:
   - component: {fileID: 1122176865763692562}
   m_Layer: 0
   m_Name: Triangle (2)
-  m_TagString: Pinchos
+  m_TagString: Spikes
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
