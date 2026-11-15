@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Parallax : MonoBehaviour
 {
@@ -9,18 +10,41 @@ public class Parallax : MonoBehaviour
     private Material parallaxMaterial;
     private float Playerx;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         parallaxMaterial = GetComponent<Renderer>().material;
-        Playerx = player.position.x;
-    }
+		FindPlayer();
+	}
 
-    // Update is called once per frame
-    void Update()
-    {
-        float delatx = player.position.x - Playerx;
-        parallaxMaterial.mainTextureOffset += new Vector2(delatx + parallaxMultiplier, 0);
-        Playerx = player.position.x;
-    }
+	void Update()
+	{
+		if (player == null) return;
+		float delatx = player.position.x - Playerx;
+		parallaxMaterial.mainTextureOffset += new Vector2(delatx * parallaxMultiplier, 0);
+		Playerx = player.position.x;
+	}
+
+	private void OnEnable()
+	{
+		SceneManager.sceneLoaded += OnSceneLoaded;
+	}
+
+	private void OnDisable()
+	{
+		SceneManager.sceneLoaded -= OnSceneLoaded;
+	}
+
+	private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+	{
+		FindPlayer();
+	}
+
+	private void FindPlayer()
+	{
+		if (Player._instance != null)
+		{
+			player = Player._instance.transform;
+			Playerx = player.position.x;
+		}
+	}
 }

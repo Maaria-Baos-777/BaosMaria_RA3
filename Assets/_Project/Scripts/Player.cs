@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.InputSystem;
@@ -14,15 +15,20 @@ public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
     private Vector2 _positionCat;
     private bool _isGravityFlipped;
     private int _diamonds;
+    private Animator _animator;
+    private bool _isWinning = false;
 
     public LayerMask _groundLayer;
-    public Player _instance;
+    public static Player _instance;
 	public static bool spawnAtLevelStart = false;
 
 	[SerializeField] private float _speed = 5f;
     [SerializeField] private float rayLength = 1f;
+	[SerializeField] private AudioSource _audioSource;
+	[SerializeField] private AudioClip _jumpSound;
+	[SerializeField] private AudioClip _diamondSound;
 
-    void Awake()
+	void Awake()
     {
         _inputAction = new InputSystem_Actions();
         _inputAction.CatPlayer.SetCallbacks(this);
@@ -42,6 +48,7 @@ public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
     {
         _rb = GetComponent<Rigidbody2D>();
         _sr = GetComponent<SpriteRenderer>();
+        _animator = GetComponent<Animator>();
         _up = InputSystem.actions.FindAction("up");
     }
 
@@ -66,7 +73,9 @@ public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
     public void OnMovement(InputAction.CallbackContext context)
     {
         _positionCat = context.ReadValue<Vector2>();
-        if (_positionCat.x > 0)
+
+		_animator.SetBool("isWalking", _positionCat != Vector2.zero);
+		if (_positionCat.x > 0)
         {
             _sr.flipX = false;
         }
@@ -82,6 +91,7 @@ public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
 
         if (IsGrounded())
         {
+            _audioSource.PlayOneShot(_jumpSound);
             Gravity();
             _sr.flipY = !_sr.flipY;
         }
@@ -94,12 +104,7 @@ public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
     }
 
     public void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Pinchos"))
-        {
-            DeadCat();
-        }
-        
+    {   
         if(collision.gameObject.CompareTag("Spikes")) 
         {
             DeadCat();
@@ -109,11 +114,18 @@ public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
         {
             DeadCat();
         }
-    }
+
+		if (collision.gameObject.CompareTag("Bullet"))
+		{
+			DeadCat();
+		}
+	}
 
     public void DeadCat()
     {
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
+		AudioManager.Instance.StopBackgroundMusic();
+		AudioManager.Instance.PlayGameOverSound();
+		UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
     }
 
     private bool IsGrounded()
@@ -127,20 +139,39 @@ public class Player : MonoBehaviour, InputSystem_Actions.ICatPlayerActions
     {
         if (collision.transform.CompareTag("Diamond"))
         {
+            _audioSource.PlayOneShot(_diamondSound);
             Destroy(collision.gameObject);
             _diamonds++;
+        }
+
+        if(collision.transform.CompareTag("NPCGirl") && !_isWinning) 
+        {
+            _isWinning = true;
+            StartCoroutine(LoadWinGame());
         }
     }
 
 	private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 	{
-		if (spawnAtLevelStart)
+	    if(scene.name == "GameOver" || scene.name == "WinGame")
+        {
+            Destroy(gameObject);
+            return;
+        }	
+
+        if (spawnAtLevelStart)
 		{
 			transform.position = new Vector3(-7f, -1.418718f, transform.position.z);
-
 			_rb.linearVelocity = Vector2.zero;
-
 			spawnAtLevelStart = false;
 		}
+	}
+
+	private IEnumerator LoadWinGame()
+	{
+		yield return new WaitForSeconds(3f);
+		AudioManager.Instance.StopBackgroundMusic();
+		AudioManager.Instance.PlayWinSound();
+		SceneManager.LoadScene("WinGame");
 	}
 }

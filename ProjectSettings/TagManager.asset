@@ -11,6 +11,10 @@ TagManager:
   - Spikes
   - Enemy
   - WalkingInverted
+  - Turret
+  - Bullet
+  - Pinchos
+  - NPCGirl
   layers:
   - Default
   - TransparentFX

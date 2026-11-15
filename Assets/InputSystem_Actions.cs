@@ -685,6 +685,35 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 }
             ]
+        },
+        {
+            ""name"": ""NPC"",
+            ""id"": ""1d11edb0-7c07-4fc5-9ff3-4debca04f973"",
+            ""actions"": [
+                {
+                    ""name"": ""Talk"",
+                    ""type"": ""Button"",
+                    ""id"": ""3d198eae-06d5-4212-9cf8-bfe59aed177e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""19f533c8-3ee0-4e77-b799-ab1dad6f0593"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Talk"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -766,12 +795,16 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_CatPlayer = asset.FindActionMap("CatPlayer", throwIfNotFound: true);
         m_CatPlayer_Movement = m_CatPlayer.FindAction("Movement", throwIfNotFound: true);
         m_CatPlayer_Up = m_CatPlayer.FindAction("Up", throwIfNotFound: true);
+        // NPC
+        m_NPC = asset.FindActionMap("NPC", throwIfNotFound: true);
+        m_NPC_Talk = m_NPC.FindAction("Talk", throwIfNotFound: true);
     }
 
     ~@InputSystem_Actions()
     {
         UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, InputSystem_Actions.UI.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_CatPlayer.enabled, "This will cause a leak and performance issues, InputSystem_Actions.CatPlayer.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_NPC.enabled, "This will cause a leak and performance issues, InputSystem_Actions.NPC.Disable() has not been called.");
     }
 
     /// <summary>
@@ -1145,6 +1178,102 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     /// Provides a new <see cref="CatPlayerActions" /> instance referencing this action map.
     /// </summary>
     public CatPlayerActions @CatPlayer => new CatPlayerActions(this);
+
+    // NPC
+    private readonly InputActionMap m_NPC;
+    private List<INPCActions> m_NPCActionsCallbackInterfaces = new List<INPCActions>();
+    private readonly InputAction m_NPC_Talk;
+    /// <summary>
+    /// Provides access to input actions defined in input action map "NPC".
+    /// </summary>
+    public struct NPCActions
+    {
+        private @InputSystem_Actions m_Wrapper;
+
+        /// <summary>
+        /// Construct a new instance of the input action map wrapper class.
+        /// </summary>
+        public NPCActions(@InputSystem_Actions wrapper) { m_Wrapper = wrapper; }
+        /// <summary>
+        /// Provides access to the underlying input action "NPC/Talk".
+        /// </summary>
+        public InputAction @Talk => m_Wrapper.m_NPC_Talk;
+        /// <summary>
+        /// Provides access to the underlying input action map instance.
+        /// </summary>
+        public InputActionMap Get() { return m_Wrapper.m_NPC; }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
+        public void Enable() { Get().Enable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
+        public void Disable() { Get().Disable(); }
+        /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
+        public bool enabled => Get().enabled;
+        /// <summary>
+        /// Implicitly converts an <see ref="NPCActions" /> to an <see ref="InputActionMap" /> instance.
+        /// </summary>
+        public static implicit operator InputActionMap(NPCActions set) { return set.Get(); }
+        /// <summary>
+        /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <param name="instance">Callback instance.</param>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
+        /// </remarks>
+        /// <seealso cref="NPCActions" />
+        public void AddCallbacks(INPCActions instance)
+        {
+            if (instance == null || m_Wrapper.m_NPCActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_NPCActionsCallbackInterfaces.Add(instance);
+            @Talk.started += instance.OnTalk;
+            @Talk.performed += instance.OnTalk;
+            @Talk.canceled += instance.OnTalk;
+        }
+
+        /// <summary>
+        /// Removes <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
+        /// </remarks>
+        /// <seealso cref="NPCActions" />
+        private void UnregisterCallbacks(INPCActions instance)
+        {
+            @Talk.started -= instance.OnTalk;
+            @Talk.performed -= instance.OnTalk;
+            @Talk.canceled -= instance.OnTalk;
+        }
+
+        /// <summary>
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="NPCActions.UnregisterCallbacks(INPCActions)" />.
+        /// </summary>
+        /// <seealso cref="NPCActions.UnregisterCallbacks(INPCActions)" />
+        public void RemoveCallbacks(INPCActions instance)
+        {
+            if (m_Wrapper.m_NPCActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        /// <summary>
+        /// Replaces all existing callback instances and previously registered input action callbacks associated with them with callbacks provided via <param cref="instance" />.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
+        /// </remarks>
+        /// <seealso cref="NPCActions.AddCallbacks(INPCActions)" />
+        /// <seealso cref="NPCActions.RemoveCallbacks(INPCActions)" />
+        /// <seealso cref="NPCActions.UnregisterCallbacks(INPCActions)" />
+        public void SetCallbacks(INPCActions instance)
+        {
+            foreach (var item in m_Wrapper.m_NPCActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_NPCActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    /// <summary>
+    /// Provides a new <see cref="NPCActions" /> instance referencing this action map.
+    /// </summary>
+    public NPCActions @NPC => new NPCActions(this);
     private int m_KeyboardMouseSchemeIndex = -1;
     /// <summary>
     /// Provides access to the input control scheme.
@@ -1309,5 +1438,20 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnUp(InputAction.CallbackContext context);
+    }
+    /// <summary>
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "NPC" which allows adding and removing callbacks.
+    /// </summary>
+    /// <seealso cref="NPCActions.AddCallbacks(INPCActions)" />
+    /// <seealso cref="NPCActions.RemoveCallbacks(INPCActions)" />
+    public interface INPCActions
+    {
+        /// <summary>
+        /// Method invoked when associated input action "Talk" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTalk(InputAction.CallbackContext context);
     }
 }
